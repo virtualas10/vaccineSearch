@@ -4,8 +4,8 @@ import json
 import smtplib
 
 fromaddr = 'vakcinu.medziotojas@gmail.com'
-toaddrs  = 'ignas.budnikas@gmail.com'
-password = 'labasrytas'
+toaddrs  = 'someone@gmail.com'
+password = ''
 URL = 'https://vilnius-vac.myhybridlab.com/selfregister/vaccine'
 
 page = requests.get(URL)
