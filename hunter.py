@@ -21,7 +21,7 @@ parsed = json.loads(js3)
 msg = ''
 
 for i in parsed['vacs']:
-	if i['free_total'] > 1 and i['name'] == "Vaxzevria (AstraZeneca)":
+	if i['free_total'] > 1 and i['name'] != "Vaxzevria (AstraZeneca)":
 		msg = msg+'Atsirado '+i['name']+' '+str(i['free_total'])+' vakcinu!\n'
 		
 print(msg)
