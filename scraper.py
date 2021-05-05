@@ -1,32 +1,35 @@
-import os
 import requests
+from bs4 import BeautifulSoup
+import json
+import smtplib
 
-from BeautifulSoup import BeautifulSoup
-from apscheduler.schedulers.blocking import BlockingScheduler
-from datetime import datetime
-sch = BlockingScheduler()
+fromaddr = 'vakcinu.medziotojas@gmail.com'
+toaddrs  = 'ignas.budnikas@gmail.com'
+password = 'labasrytas'
+URL = 'https://vilnius-vac.myhybridlab.com/selfregister/vaccine'
 
-def main(): 
-    url = 'https://www.indeed.com/jobs?q=web%20developer&l=Denver%2C%20CO&vjk=0c0f7c56b3d79b4c'
-    response = requests.get(url)
-    html = response.content
+page = requests.get(URL)
+soup = BeautifulSoup(page.content, 'html.parser')
 
-    soup = BeautifulSoup(html)
-    matches = soup.findAll(name='div', attrs={'class': 'title'})
+results = soup.find('vaccine-rooms')
 
-    for jobTitle in matches:
-        if "Junior" in jobTitle.text: 
-            os.system("osascript sendMessage.scpt YOUR_NUMBER_HERE 'Just one' ")
-            break
-        elif "Jr" in jobTitle.text: 
-            os.system("osascript sendMessage.scpt YOUR_NUMBER_HERE 'how many' ")
-            break  
-    return;
+js1 = str(results).split(":vaccine-rooms='[")
+js2 = js1[1].split("]'")
+js3 = '{ "vacs" : ['+js2[0]+'] }'
 
-sch.add_job(main, 'interval', seconds=2)
-print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
+parsed = json.loads(js3)
+msg = ''
 
-try:
-    sch.start()
-except (KeyboardInterrupt, SystemExit):
-    pass
+for i in parsed['vacs']:
+	if i['free_total'] > 1 and i['name'] == "Vaxzevria (AstraZeneca)":
+		msg = msg+'Atsirado '+i['name']+' '+str(i['free_total'])+' vakcinu!\n'
+		
+print(msg)
+if msg > '':
+	server = smtplib.SMTP('smtp.gmail.com:587')
+	server.ehlo()
+	server.starttls()
+	server.login(fromaddr,password)
+	server.sendmail(fromaddr, toaddrs, msg)
+	server.quit()
+
